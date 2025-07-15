@@ -1,30 +1,24 @@
-"use client";
-import React from "react";
+import { useChatroomStore } from "@/store/chatroomStore";
+import { useEffect } from "react";
 
 interface ChatroomUIProps {
   chatroomId: string;
 }
 
 export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
-  const dummyMessages = [
-    {
-      id: "1",
-      text: "Welcome to this chatroom!",
-      sender: "ai",
-      timestamp: Date.now() - 10000,
-    },
-    {
-      id: "2",
-      text: "This is your first message.",
-      sender: "user",
-      timestamp: Date.now() - 8000,
-    },
-  ];
+  const messages = useChatroomStore((s) => s.messages[chatroomId] || []);
+  const loadInitialMessages = useChatroomStore((s) => s.loadInitialMessages);
+
+  // Only load initial messages ONCE when chatroomId changes:
+  useEffect(() => {
+    loadInitialMessages(chatroomId);
+    // Dependency is ONLY chatroomId and loadInitialMessages (safe)
+  }, [chatroomId, loadInitialMessages]);
 
   return (
     <div className="max-w-2xl mx-auto bg-zinc-800 rounded-2xl shadow-xl p-4 min-h-[400px] flex flex-col">
       <div className="flex-1 overflow-y-auto mb-4">
-        {dummyMessages.map((msg) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex mb-3 ${
@@ -49,6 +43,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
           </div>
         ))}
       </div>
+      {/* Message input will be wired up next! */}
       <div>
         <input
           type="text"

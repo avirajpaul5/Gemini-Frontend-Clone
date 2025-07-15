@@ -9,7 +9,6 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const setSelectedChatroomId = useChatroomStore((s) => s.setSelectedChatroomId);
   const selectedChatroomId = useChatroomStore((s) => s.selectedChatroomId);
-  const chatrooms = useChatroomStore((s) => s.chatrooms);
 
   return (
     <div className="flex min-h-screen bg-background">
