@@ -27,10 +27,38 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
 
   const [image, setImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      if (file.size > 200 * 1024) {
+        alert("Please upload an image smaller than 200KB for this demo.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => setImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 200 * 1024) {
+      alert("Please upload an image smaller than 200KB for this demo.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setImage(reader.result as string);
     reader.readAsDataURL(file);
@@ -178,45 +206,57 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
           </button>
         </div>
       )}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="p-2 text-zinc-300 hover:text-blue-400"
-          onClick={() => fileInputRef.current?.click()}
-          aria-label="Attach image"
-        >
-          📎
-        </button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-        />
-        <input
-          type="text"
-          className="w-full p-2 rounded border bg-zinc-900 text-white focus:outline-none focus:ring"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
+      <div
+        className={`flex flex-col gap-2 ${
+          isDragging ? "ring-2 ring-blue-400 bg-blue-900/20" : ""
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* (Your image preview goes here, if any) */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="p-2 text-zinc-300 hover:text-blue-400"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Attach image"
+          >
+            📎
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+          <input
+            type="text"
+            className="w-full p-2 rounded border bg-zinc-900 text-white focus:outline-none focus:ring"
+            placeholder={
+              isDragging ? "Drop an image here..." : "Type a message..."
             }
-          }}
-          autoFocus
-        />
-        <button
-          onClick={handleSend}
-          disabled={!input.trim() && !image}
-          className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
-          aria-label="Send"
-          type="button"
-        >
-          Send
-        </button>
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            autoFocus
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() && !image}
+            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
+            aria-label="Send"
+            type="button"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
