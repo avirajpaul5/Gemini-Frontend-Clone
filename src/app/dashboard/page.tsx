@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import ChatroomSidebar from "../../components/sidebar/ChatroomSidebar";
 import { useChatroomStore } from "@/store/chatroomStore";
+import ChatroomUI from "../../components/chatroom/ChatroomUI";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,7 +15,7 @@ export default function Dashboard() {
     <div className="flex min-h-screen bg-background">
       {/* Sidebar (Sheet) */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        {/* Hamburger (open) button: appears when sidebar is closed */}
+        
         {!sidebarOpen && (
           <SheetTrigger asChild>
             <button
@@ -26,7 +27,7 @@ export default function Dashboard() {
           </SheetTrigger>
         )}
 
-        {/* SheetContent (actual sidebar) */}
+        
         <SheetContent
           side="left"
           className="p-0 w-72 bg-zinc-900 border-r border-zinc-800"
@@ -35,7 +36,7 @@ export default function Dashboard() {
         </SheetContent>
       </Sheet>
 
-      {/* Main content shifts right only if sidebarOpen and desktop */}
+      
       <main
         className={`flex-1 transition-all duration-300 ${
           sidebarOpen ? "ml-0 lg:ml-72" : ""
@@ -46,13 +47,7 @@ export default function Dashboard() {
             Select a chatroom to start chatting.
           </div>
         ) : (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">
-              Chatroom:{" "}
-              {chatrooms.find((c) => c.id === selectedChatroomId)?.title}
-            </h2>
-            {/* <ChatroomUI chatroomId={selectedChatroomId} /> */}
-          </div>
+          <ChatroomUI chatroomId={selectedChatroomId} />
         )}
       </main>
     </div>
