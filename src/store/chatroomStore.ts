@@ -16,6 +16,8 @@ type ChatroomState = {
     message: Omit<ChatMessage, "id" | "timestamp">
   ) => void;
   loadInitialMessages: (chatroomId: string) => void;
+  pagination: { [chatroomId: string]: { page: number; pageSize: number } };
+  setPagination: (chatroomId: string, page: number) => void;
 };
 
 // Zustand store function
@@ -72,6 +74,16 @@ export const chatroomStore = create<ChatroomState>()(
             },
           };
         }),
+
+      pagination: {},
+      setPagination: (chatroomId, page) =>
+        set((state) => ({
+          pagination: {
+            ...state.pagination,
+            [chatroomId]: { page, pageSize: 20 },
+          },
+        })),
+        
     }),
     {
       name: "chatrooms-storage",
