@@ -1,5 +1,6 @@
 import { useChatroomStore } from "@/store/chatroomStore";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 interface ChatroomUIProps {
   chatroomId: string;
@@ -23,6 +24,17 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isGeminiTyping, setIsGeminiTyping] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  const [image, setImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImage(reader.result as string);
+    reader.readAsDataURL(file);
+  }
 
   // Reset pagination and load messages on chatroom change
   useEffect(() => {
@@ -57,9 +69,14 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
 
   const handleSend = () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
-    addMessage(chatroomId, { text: trimmed, sender: "user" });
+    if (!trimmed && !image) return; // prevent empty send
+    addMessage(chatroomId, {
+      text: trimmed,
+      sender: "user",
+      image: image || undefined,
+    });
     setInput("");
+    setImage(null);
     setIsGeminiTyping(true);
     setTimeout(() => {
       addMessage(chatroomId, { text: getRandomGeminiReply(), sender: "ai" });
@@ -108,6 +125,22 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
               }`}
             >
               {msg.text}
+              {msg.image && (
+                <div className="mt-2">
+                  <Image
+                    src={msg.image}
+                    alt="Sent image"
+                    className="rounded-lg border"
+                    width={180}
+                    height={120}
+                    style={{
+                      maxWidth: "11rem",
+                      height: "auto",
+                      maxHeight: "7rem",
+                    }}
+                  />
+                </div>
+              )}
               <div className="text-xs opacity-60 mt-1">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -126,7 +159,41 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         )}
         <div ref={messagesEndRef} />
       </div>
+      {image && (
+        <div className="mb-2 flex items-center gap-3">
+          <Image
+            src={image}
+            alt="Preview"
+            className="rounded-xl border"
+            width={100}
+            height={100}
+            style={{ maxWidth: "100%", height: "auto", maxHeight: "6rem" }}
+          />
+          <button
+            onClick={() => setImage(null)}
+            className="text-xs px-2 py-1 bg-zinc-700 rounded hover:bg-red-600 transition text-white"
+            type="button"
+          >
+            Remove
+          </button>
+        </div>
+      )}
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="p-2 text-zinc-300 hover:text-blue-400"
+          onClick={() => fileInputRef.current?.click()}
+          aria-label="Attach image"
+        >
+          📎
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
         <input
           type="text"
           className="w-full p-2 rounded border bg-zinc-900 text-white focus:outline-none focus:ring"
@@ -143,7 +210,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         />
         <button
           onClick={handleSend}
-          disabled={!input.trim()}
+          disabled={!input.trim() && !image}
           className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
           aria-label="Send"
           type="button"
