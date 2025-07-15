@@ -1,7 +1,7 @@
 import { useChatroomStore } from "@/store/chatroomStore";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-
+import toast from "react-hot-toast";
 interface ChatroomUIProps {
   chatroomId: string;
 }
@@ -28,6 +28,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   const [image, setImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null);
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -141,17 +142,34 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         {paginatedMessages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex mb-3 ${
+            className={`group flex mb-3 ${
               msg.sender === "user" ? "justify-end" : "justify-start"
             }`}
+            onMouseEnter={() => setHoveredMsgId(msg.id)}
+            onMouseLeave={() => setHoveredMsgId(null)}
           >
             <div
-              className={`rounded-xl px-4 py-2 max-w-xs ${
+              className={`relative rounded-xl px-4 py-2 max-w-xs ${
                 msg.sender === "user"
                   ? "bg-blue-500 text-white"
                   : "bg-zinc-700 text-zinc-100"
               }`}
             >
+              {hoveredMsgId === msg.id && (
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      msg.text + (msg.image ? " [image attached]" : "")
+                    );
+                    toast.success("Copied to clipboard!");
+                  }}
+                  className="absolute -bottom-3 right-2 bg-zinc-800 text-xs text-white px-2 py-1 rounded shadow hover:bg-blue-600 transition z-10"
+                  aria-label="Copy message"
+                  type="button"
+                >
+                  Copy
+                </button>
+              )}
               {msg.text}
               {msg.image && (
                 <div className="mt-2">
