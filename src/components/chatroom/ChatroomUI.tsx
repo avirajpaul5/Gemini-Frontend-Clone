@@ -1,5 +1,5 @@
 import { useChatroomStore } from "@/store/chatroomStore";
-import { useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface ChatroomUIProps {
   chatroomId: string;
@@ -8,12 +8,20 @@ interface ChatroomUIProps {
 export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   const messages = useChatroomStore((s) => s.messages[chatroomId] || []);
   const loadInitialMessages = useChatroomStore((s) => s.loadInitialMessages);
+  const [input, setInput] = useState("");
+  const addMessage = useChatroomStore((s) => s.addMessage);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Only load initial messages ONCE when chatroomId changes:
   useEffect(() => {
     loadInitialMessages(chatroomId);
-    // Dependency is ONLY chatroomId and loadInitialMessages (safe)
   }, [chatroomId, loadInitialMessages]);
+
+  const handleSend = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    addMessage(chatroomId, { text: trimmed, sender: "user" });
+    setInput("");
+  };
 
   return (
     <div className="max-w-2xl mx-auto bg-zinc-800 rounded-2xl shadow-xl p-4 min-h-[400px] flex flex-col">
@@ -42,15 +50,32 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
-      {/* Message input will be wired up next! */}
-      <div>
+      <div className="flex items-center gap-2">
         <input
           type="text"
           className="w-full p-2 rounded border bg-zinc-900 text-white focus:outline-none focus:ring"
           placeholder="Type a message..."
-          disabled
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          autoFocus
         />
+        <button
+          onClick={handleSend}
+          disabled={!input.trim()}
+          className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
+          aria-label="Send"
+          type="button"
+        >
+          Send
+        </button>
       </div>
     </div>
   );
