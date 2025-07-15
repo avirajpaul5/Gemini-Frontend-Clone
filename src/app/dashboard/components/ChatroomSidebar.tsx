@@ -76,6 +76,15 @@ export default function ChatroomSidebar({
   // Sidebar UI
   return (
     <aside className="relative flex flex-col h-full w-72 bg-zinc-900 border-r border-zinc-800 p-4">
+      {closeSidebar && (
+        <button
+          onClick={closeSidebar}
+          className="absolute top-4 right-4 p-2 rounded bg-zinc-800 text-white hover:bg-zinc-700 transition"
+          aria-label="Close Sidebar"
+        >
+          ×
+        </button>
+      )}
       <h2 className="text-xl font-semibold mb-4">Chatrooms</h2>
       <input
         type="text"
