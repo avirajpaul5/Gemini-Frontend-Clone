@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import ChatroomSidebar from "./components/ChatroomSidebar";
+import ChatroomSidebar from "../../components/sidebar/ChatroomSidebar";
 import { useChatroomStore } from "@/store/chatroomStore";
 
 export default function Dashboard() {
