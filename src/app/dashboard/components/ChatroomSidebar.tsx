@@ -24,10 +24,19 @@ const PlusIcon = () => (
   </span>
 );
 
-export default function ChatroomSidebar() {
+interface ChatroomSidebarProps {
+  closeSidebar?: () => void;
+  onSelectChatroom?: (id: string) => void;
+}
+
+export default function ChatroomSidebar({
+  closeSidebar,
+  onSelectChatroom,
+}: ChatroomSidebarProps) {
   const chatrooms = useChatroomStore((state) => state.chatrooms);
   const addChatroom = useChatroomStore((state) => state.addChatroom);
   const deleteChatroom = useChatroomStore((state) => state.deleteChatroom);
+  const selectedChatroomId = useChatroomStore((s) => s.selectedChatroomId);
 
   const [openCreate, setOpenCreate] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -86,7 +95,17 @@ export default function ChatroomSidebar() {
                 key={c.id}
                 className="flex items-center justify-between border-b border-zinc-800 py-2 group"
               >
-                <span className="truncate">{c.title}</span>
+                <span
+                  className={`truncate cursor-pointer ${
+                    selectedChatroomId === c.id ? "font-bold text-blue-400" : ""
+                  }`}
+                  onClick={() => onSelectChatroom?.(c.id)}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Select chatroom ${c.title}`}
+                >
+                  {c.title}
+                </span>
                 <button
                   onClick={() => setDeleteId(c.id)}
                   className="text-red-500 opacity-0 group-hover:opacity-100 transition"

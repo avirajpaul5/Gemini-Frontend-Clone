@@ -7,6 +7,8 @@ type ChatroomState = {
   chatrooms: Chatroom[];
   addChatroom: (title: string) => void;
   deleteChatroom: (id: string) => void;
+  selectedChatroomId: string | null;
+  setSelectedChatroomId: (id: string | null) => void;
 };
 
 // Zustand store function
@@ -25,6 +27,8 @@ export const chatroomStore = create<ChatroomState>()(
         set((state) => ({
           chatrooms: state.chatrooms.filter((c) => c.id !== id),
         })),
+      selectedChatroomId: null,
+      setSelectedChatroomId: (id) => set(() => ({ selectedChatroomId: id })),
     }),
     {
       name: "chatrooms-storage",
