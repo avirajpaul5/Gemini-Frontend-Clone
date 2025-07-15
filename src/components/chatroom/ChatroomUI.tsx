@@ -11,6 +11,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   const [input, setInput] = useState("");
   const addMessage = useChatroomStore((s) => s.addMessage);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isGeminiTyping, setIsGeminiTyping] = useState(false);
 
   useEffect(() => {
     loadInitialMessages(chatroomId);
@@ -21,7 +22,26 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     if (!trimmed) return;
     addMessage(chatroomId, { text: trimmed, sender: "user" });
     setInput("");
+    // Simulate Gemini typing and reply
+    setIsGeminiTyping(true);
+    setTimeout(() => {
+      addMessage(chatroomId, { text: getRandomGeminiReply(), sender: "ai" });
+      setIsGeminiTyping(false);
+    }, 1300 + Math.random() * 1000); // 1.3-2.3s delay
   };
+
+  const GEMINI_REPLIES = [
+    "That's interesting! Tell me more.",
+    "How can I help you today?",
+    "Let's talk about it!",
+    "I'm here to chat whenever you want.",
+    "Absolutely!",
+    "Can you elaborate?",
+  ];
+
+  function getRandomGeminiReply() {
+    return GEMINI_REPLIES[Math.floor(Math.random() * GEMINI_REPLIES.length)];
+  }
 
   return (
     <div className="max-w-2xl mx-auto bg-zinc-800 rounded-2xl shadow-xl p-4 min-h-[400px] flex flex-col">
@@ -50,6 +70,13 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
             </div>
           </div>
         ))}
+        {isGeminiTyping && (
+          <div className="flex mb-3 justify-start">
+            <div className="rounded-xl px-4 py-2 max-w-xs bg-zinc-700 text-zinc-100 italic opacity-80 animate-pulse">
+              Gemini is typing...
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
       <div className="flex items-center gap-2">
