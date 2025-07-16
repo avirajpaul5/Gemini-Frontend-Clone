@@ -34,9 +34,10 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null);
 
-  
+  // Track if user is near bottom for auto-scroll behavior
   const [isNearBottom, setIsNearBottom] = useState(true);
   const wasNearBottomRef = useRef(true);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -75,11 +76,12 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     reader.readAsDataURL(file);
   }
 
+  // Check if user is near bottom of chat
   const checkIfNearBottom = useCallback(() => {
     const container = scrollRef.current;
     if (!container) return false;
 
-    const threshold = 100; 
+    const threshold = 100; // pixels from bottom
     const isNear =
       container.scrollHeight - container.scrollTop - container.clientHeight <
       threshold;
@@ -89,24 +91,44 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     return isNear;
   }, []);
 
+  // Reset pagination and load messages on chatroom change
   useEffect(() => {
     loadInitialMessages(chatroomId);
     setPagination(chatroomId, 1);
     setIsNearBottom(true);
     wasNearBottomRef.current = true;
 
+    // Scroll to bottom after initial load
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
     }, 0);
   }, [chatroomId, loadInitialMessages, setPagination]);
+
+  // Auto-scroll logic for new messages
   useEffect(() => {
-    if (wasNearBottomRef.current) {
+    if (messages.length === 0) return;
+
+    const latestMessage = messages[messages.length - 1];
+    const shouldAutoScroll =
+      latestMessage.sender === "user" || // Always scroll for user messages
+      wasNearBottomRef.current; // Only scroll for AI messages if user was near bottom
+
+    if (shouldAutoScroll) {
+      // Show scroll indicator if user was not near bottom
+      if (!wasNearBottomRef.current && latestMessage.sender === "user") {
+        setShowScrollIndicator(true);
+        setTimeout(() => setShowScrollIndicator(false), 2000);
+      }
+
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        setIsNearBottom(true);
+        wasNearBottomRef.current = true;
       }, 100);
     }
-  }, [messages.length]);
+  }, [messages.length, messages]);
 
+  // Set up scroll listener for near-bottom detection
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
@@ -123,6 +145,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     -pagination.page * pagination.pageSize
   );
 
+  // Infinite scroll logic with proper scroll anchoring
   const canLoadMore = paginatedMessages.length < messages.length;
 
   const handleLoadMore = useCallback(() => {
@@ -130,6 +153,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
 
     setLoadingMore(true);
 
+    // Simulate network delay
     setTimeout(() => {
       setPagination(chatroomId, pagination.page + 1);
       setLoadingMore(false);
@@ -147,6 +171,10 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed && !image) return;
+
+    // Force scroll to bottom for user messages
+    wasNearBottomRef.current = true;
+    setIsNearBottom(true);
 
     addMessage(chatroomId, {
       text: trimmed,
@@ -181,6 +209,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     return GEMINI_REPLIES[Math.floor(Math.random() * GEMINI_REPLIES.length)];
   }
 
+  // Scroll to bottom function for manual use
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -191,8 +220,10 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         className="flex-1 overflow-y-auto mb-4 px-2 pb-28 relative"
         ref={scrollRef}
       >
+        {/* Top marker for infinite scroll */}
         <div ref={topMarkerRef} style={{ height: 1 }}></div>
 
+        {/* Loading indicator */}
         {loadingMore && (
           <div className="w-full flex justify-center py-4">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
@@ -286,6 +317,13 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         {/* Scroll anchor */}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Scroll indicator */}
+      {showScrollIndicator && (
+        <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-40 bg-blue-500 text-white px-3 py-1 rounded-full text-sm animate-pulse">
+          Scrolling to latest message...
+        </div>
+      )}
 
       {/* Scroll to bottom button */}
       {!isNearBottom && (
