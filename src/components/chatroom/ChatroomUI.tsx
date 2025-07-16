@@ -127,7 +127,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto bg-zinc-800 rounded-2xl shadow-xl p-4 min-h-[400px] flex flex-col">
+    <div className="max-w-2xl mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-2xl shadow-xl p-4 min-h-[400px] flex flex-col transition-colors">
       <div
         className="flex-1 overflow-y-auto mb-4"
         ref={scrollRef}
@@ -149,10 +149,10 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
             onMouseLeave={() => setHoveredMsgId(null)}
           >
             <div
-              className={`relative rounded-xl px-4 py-2 max-w-xs ${
+              className={`relative rounded-xl px-4 py-2 max-w-xs transition-colors ${
                 msg.sender === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-zinc-700 text-zinc-100"
+                  ? "bg-blue-500 text-white dark:bg-blue-400 dark:text-zinc-900"
+                  : "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
               }`}
             >
               {hoveredMsgId === msg.id && (
@@ -163,7 +163,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
                     );
                     toast.success("Copied to clipboard!");
                   }}
-                  className="absolute -bottom-3 right-2 bg-zinc-800 text-xs text-white px-2 py-1 rounded shadow hover:bg-blue-600 transition z-10"
+                  className="absolute -bottom-3 right-2 bg-zinc-800 dark:bg-zinc-900 text-xs text-white px-2 py-1 rounded shadow hover:bg-blue-600 dark:hover:bg-blue-500 transition z-10"
                   aria-label="Copy message"
                   type="button"
                 >
@@ -198,7 +198,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         ))}
         {isGeminiTyping && (
           <div className="flex mb-3 justify-start">
-            <div className="rounded-xl px-4 py-2 max-w-xs bg-zinc-700 text-zinc-100 italic opacity-80 animate-pulse">
+            <div className="rounded-xl px-4 py-2 max-w-xs bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100 italic opacity-80 animate-pulse">
               Gemini is typing...
             </div>
           </div>
@@ -217,7 +217,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
           />
           <button
             onClick={() => setImage(null)}
-            className="text-xs px-2 py-1 bg-zinc-700 rounded hover:bg-red-600 transition text-white"
+            className="text-xs px-2 py-1 bg-zinc-700 dark:bg-zinc-800 rounded hover:bg-red-600 dark:hover:bg-red-700 transition text-white"
             type="button"
           >
             Remove
@@ -226,7 +226,9 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
       )}
       <div
         className={`flex flex-col gap-2 ${
-          isDragging ? "ring-2 ring-blue-400 bg-blue-900/20" : ""
+          isDragging
+            ? "ring-2 ring-blue-400 bg-blue-100/40 dark:bg-blue-900/20"
+            : ""
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -236,7 +238,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="p-2 text-zinc-300 hover:text-blue-400"
+            className="p-2 text-zinc-300 dark:text-zinc-200 hover:text-blue-400"
             onClick={() => fileInputRef.current?.click()}
             aria-label="Attach image"
           >
@@ -251,7 +253,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
           />
           <input
             type="text"
-            className="w-full p-2 rounded border bg-zinc-900 text-white focus:outline-none focus:ring"
+            className="w-full p-2 rounded border bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring"
             placeholder={
               isDragging ? "Drop an image here..." : "Type a message..."
             }
@@ -268,7 +270,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
           <button
             onClick={handleSend}
             disabled={!input.trim() && !image}
-            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
+            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:opacity-60"
             aria-label="Send"
             type="button"
           >

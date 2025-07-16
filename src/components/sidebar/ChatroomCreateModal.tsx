@@ -45,7 +45,7 @@ export default function ChatroomCreateModal({
           <input
             type="text"
             placeholder="Chatroom Title"
-            className="border p-2 rounded w-full mb-1"
+            className="border p-2 rounded w-full mb-1 bg-white dark:bg-[#232328] text-[#19191C] dark:text-[#F3F3F6] border-[#E5E6EC] dark:border-[#2C2C32] transition-colors"
             {...register("title")}
             disabled={isSubmitting}
             autoFocus
@@ -60,14 +60,14 @@ export default function ChatroomCreateModal({
                 onOpenChange(false);
                 reset();
               }}
-              className="px-4 py-2 rounded border mr-2"
+              className="px-4 py-2 rounded border mr-2 bg-[#F3F3F6] dark:bg-[#232328] text-black dark:text-[#F3F3F6] hover:bg-[#E5E6EC] dark:hover:bg-[#232328] transition"
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded"
+              className="px-4 py-2 bg-[#1877FF] hover:bg-blue-600 text-white rounded transition"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Creating..." : "Create"}

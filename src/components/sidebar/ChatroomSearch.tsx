@@ -12,7 +12,7 @@ export default function ChatroomSearch({
   return (
     <input
       type="text"
-      className="mb-4 px-3 py-2 border rounded w-full bg-zinc-800 text-white placeholder:text-zinc-400"
+      className="mb-4 px-3 py-2 border rounded w-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 border-zinc-300 dark:border-zinc-700 transition-colors"
       placeholder="Search chatrooms..."
       value={value}
       onChange={(e) => onChange(e.target.value)}

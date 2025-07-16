@@ -75,20 +75,22 @@ export default function ChatroomSidebar({
 
   // Sidebar UI
   return (
-    <aside className="relative flex flex-col h-full w-72 bg-zinc-900 border-r border-zinc-800 p-4">
+    <aside className="relative flex flex-col h-full w-72 bg-[#FAFAFB] dark:bg-[#19191C] border-r border-[#E5E6EC] dark:border-[#232328] p-4 transition-colors">
       {closeSidebar && (
         <button
           onClick={closeSidebar}
-          className="absolute top-4 right-4 p-2 rounded bg-zinc-800 text-white hover:bg-zinc-700 transition"
+          className="absolute top-4 right-4 p-2 rounded bg-[#F3F3F6] dark:bg-[#232328] text-black dark:text-[#F3F3F6] hover:bg-[#E5E6EC] dark:hover:bg-[#232328] transition"
           aria-label="Close Sidebar"
         >
           ×
         </button>
       )}
-      <h2 className="text-xl font-semibold mb-4">Chatrooms</h2>
+      <h2 className="text-xl font-semibold mb-4 text-[#19191C] dark:text-[#F3F3F6]">
+        Chatrooms
+      </h2>
       <input
         type="text"
-        className="mb-4 px-3 py-2 border rounded w-full bg-zinc-800 text-white placeholder:text-zinc-400"
+        className="mb-4 px-3 py-2 border rounded w-full bg-white dark:bg-[#232328] text-[#19191C] dark:text-[#F3F3F6] placeholder:text-[#8F8F9F] dark:placeholder:text-[#E5E6EC] border-[#E5E6EC] dark:border-[#2C2C32] transition-colors"
         placeholder="Search chatrooms..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -96,17 +98,21 @@ export default function ChatroomSidebar({
       />
       <div className="flex-1 overflow-auto">
         {filteredChatrooms.length === 0 ? (
-          <p className="text-gray-500 text-sm mt-8">No chatrooms found.</p>
+          <p className="text-[#8F8F9F] dark:text-[#E5E6EC] text-sm mt-8">
+            No chatrooms found.
+          </p>
         ) : (
           <ul>
             {filteredChatrooms.map((c) => (
               <li
                 key={c.id}
-                className="flex items-center justify-between border-b border-zinc-800 py-2 group"
+                className="flex items-center justify-between border-b border-[#E5E6EC] dark:border-[#232328] py-2 group"
               >
                 <span
-                  className={`truncate cursor-pointer ${
-                    selectedChatroomId === c.id ? "font-bold text-blue-400" : ""
+                  className={`truncate cursor-pointer text-[#19191C] dark:text-[#F3F3F6] transition-colors ${
+                    selectedChatroomId === c.id
+                      ? "font-bold text-[#1877FF] dark:text-[#1877FF]"
+                      : ""
                   }`}
                   onClick={() => onSelectChatroom?.(c.id)}
                   tabIndex={0}
@@ -130,14 +136,14 @@ export default function ChatroomSidebar({
       </div>
       <button
         onClick={() => setOpenCreate(true)}
-        className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium transition"
+        className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded bg-[#1877FF] hover:bg-[#1877FF] text-white font-medium transition"
       >
         <PlusIcon />
         New Chatroom
       </button>
       {/* Create Chatroom Modal */}
       <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-[#19191C] border border-[#E5E6EC] dark:border-[#232328] text-[#19191C] dark:text-[#F3F3F6]">
           <DialogHeader>
             <DialogTitle>Create Chatroom</DialogTitle>
           </DialogHeader>
@@ -145,7 +151,7 @@ export default function ChatroomSidebar({
             <input
               type="text"
               placeholder="Chatroom Title"
-              className="border p-2 rounded w-full mb-1"
+              className="border p-2 rounded w-full mb-1 bg-white dark:bg-[#232328] text-[#19191C] dark:text-[#F3F3F6] border-[#E5E6EC] dark:border-[#2C2C32] transition-colors"
               {...register("title")}
               disabled={isSubmitting}
               autoFocus
@@ -162,14 +168,14 @@ export default function ChatroomSidebar({
                   setOpenCreate(false);
                   reset();
                 }}
-                className="px-4 py-2 rounded border mr-2"
+                className="px-4 py-2 rounded border mr-2 bg-[#F3F3F6] dark:bg-[#232328] text-black dark:text-[#F3F3F6] hover:bg-[#E5E6EC] dark:hover:bg-[#232328] transition"
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded"
+                className="px-4 py-2 bg-[#1877FF] hover:bg-[#1877FF] text-white rounded transition"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Creating..." : "Create"}
@@ -180,25 +186,25 @@ export default function ChatroomSidebar({
       </Dialog>
       {/* Delete Confirmation Modal */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-[#19191C] border border-[#E5E6EC] dark:border-[#232328] text-[#19191C] dark:text-[#F3F3F6]">
           <DialogHeader>
             <DialogTitle>Delete Chatroom</DialogTitle>
           </DialogHeader>
-          <p>
+          <p className="text-[#19191C] dark:text-[#F3F3F6]">
             Are you sure you want to delete this chatroom? This cannot be
             undone.
           </p>
           <DialogFooter>
             <button
               type="button"
-              className="px-4 py-2 rounded border mr-2"
+              className="px-4 py-2 rounded border mr-2 bg-[#F3F3F6] dark:bg-[#232328] text-black dark:text-[#F3F3F6] hover:bg-[#E5E6EC] dark:hover:bg-[#232328] transition"
               onClick={() => setDeleteId(null)}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="px-4 py-2 bg-red-600 text-white rounded"
+              className="px-4 py-2 bg-red-600 hover:bg-red-600 text-white rounded transition"
               onClick={onDelete}
             >
               Delete
