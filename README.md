@@ -78,7 +78,7 @@ src/
 
 ## Screenshots
 
-| Authentication (OTP)                        | Chatroom Dashboard                             |
+| Authentication                              | Chatroom Dashboard                             |
 | ------------------------------------------- | ---------------------------------------------- |
 | ![Auth screen](public/screenshots/auth.png) | ![Dashboard](public/screenshots/dashboard.png) |
 
