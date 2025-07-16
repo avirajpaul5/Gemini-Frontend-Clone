@@ -79,7 +79,7 @@ export default function ChatroomSidebar({
       {closeSidebar && (
         <button
           onClick={closeSidebar}
-          className="absolute top-4 right-4 p-2 rounded bg-[#F3F3F6] dark:bg-[#232328] text-black dark:text-[#F3F3F6] hover:bg-[#E5E6EC] dark:hover:bg-[#232328] transition"
+          className="absolute top-4 right-4 p-2 rounded bg-[#F3F3F6] dark:bg-[#232328] text-black dark:text-red-500 hover:bg-[#E5E6EC] dark:hover:bg-[#232328] transition"
           aria-label="Close Sidebar"
         >
           ×

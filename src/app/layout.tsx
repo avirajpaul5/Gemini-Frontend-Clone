@@ -28,6 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <div id="chat-input-portal-root"></div>
         <Toaster position="top-center" />
         {children}
       </body>

@@ -13,7 +13,10 @@ export default function Dashboard() {
     (s) => s.setSelectedChatroomId
   );
   const selectedChatroomId = useChatroomStore((s) => s.selectedChatroomId);
+  const chatrooms = useChatroomStore((s) => s.chatrooms);
   const [dark, setDark] = useDarkMode();
+
+  const shouldShowChat = !!selectedChatroomId && chatrooms.length > 0;
 
   return (
     <div className="flex min-h-screen bg-[#FAFAFB] dark:bg-[#19191C] transition-colors">
@@ -39,9 +42,9 @@ export default function Dashboard() {
       </Sheet>
 
       <main
-        className={`flex-1 transition-all duration-300 ${
+        className={`flex-1 flex flex-col items-stretch justify-stretch p-4 transition-all duration-300 ${
           sidebarOpen ? "ml-0 lg:ml-72" : ""
-        } p-4`}
+        }`}
       >
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
           <Switch
@@ -56,12 +59,16 @@ export default function Dashboard() {
             Dark mode
           </label>
         </div>
-        {!selectedChatroomId ? (
-          <div className="text-[#8F8F9F] dark:text-[#E5E6EC] text-center mt-32">
-            Select a chatroom to start chatting.
+        {!shouldShowChat ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-2xl font-semibold text-[#8F8F9F] dark:text-[#E5E6EC] text-center">
+              Select a chatroom to get started.
+            </div>
           </div>
         ) : (
-          <ChatroomUI chatroomId={selectedChatroomId} />
+          <div className="flex-1 w-full h-full">
+            <ChatroomUI chatroomId={selectedChatroomId!} />
+          </div>
         )}
       </main>
     </div>

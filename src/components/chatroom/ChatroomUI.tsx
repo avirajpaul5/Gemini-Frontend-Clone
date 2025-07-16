@@ -2,6 +2,8 @@ import { useChatroomStore } from "@/store/chatroomStore";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import ChatInputPortal from "../chatroom/ChatInputPortal";
+
 interface ChatroomUIProps {
   chatroomId: string;
 }
@@ -126,13 +128,19 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     return GEMINI_REPLIES[Math.floor(Math.random() * GEMINI_REPLIES.length)];
   }
 
+  // --- MAIN RENDER ---
   return (
-    <div className="max-w-2xl mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-2xl shadow-xl p-4 min-h-[400px] flex flex-col transition-colors">
+    <div
+      className="
+      w-full h-full flex flex-col 
+      bg-[#FAFAFB] dark:bg-[#19191C] transition-colors rounded-2xl shadow-xl overflow-hidden
+      max-w-2xl mx-auto
+    "
+    >
       <div
-        className="flex-1 overflow-y-auto mb-4"
+        className="flex-1 overflow-y-auto mb-4 px-2 pb-28" // <-- add pb-28 for input height
         ref={scrollRef}
         onScroll={handleScroll}
-        style={{ maxHeight: "400px" }}
       >
         {loadingMore && (
           <div className="w-full flex justify-center py-2 text-gray-400 animate-pulse">
@@ -205,79 +213,84 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
         )}
         <div ref={messagesEndRef} />
       </div>
-      {image && (
-        <div className="mb-2 flex items-center gap-3">
-          <Image
-            src={image}
-            alt="Preview"
-            className="rounded-xl border"
-            width={100}
-            height={100}
-            style={{ maxWidth: "100%", height: "auto", maxHeight: "6rem" }}
-          />
-          <button
-            onClick={() => setImage(null)}
-            className="text-xs px-2 py-1 bg-zinc-700 dark:bg-zinc-800 rounded hover:bg-red-600 dark:hover:bg-red-700 transition text-white"
-            type="button"
+
+      {/* --- Chat Input Portal --- */}
+      <ChatInputPortal>
+        <div className="fixed bottom-0 left-1/2 w-full max-w-2xl -translate-x-1/2 z-50 p-2 bg-[#FAFAFB] dark:bg-[#19191C]/95 border-t border-zinc-200 dark:border-zinc-700 shadow-2xl">
+          {image && (
+            <div className="mb-2 flex items-center gap-3">
+              <Image
+                src={image}
+                alt="Preview"
+                className="rounded-xl border"
+                width={100}
+                height={100}
+                style={{ maxWidth: "100%", height: "auto", maxHeight: "6rem" }}
+              />
+              <button
+                onClick={() => setImage(null)}
+                className="text-xs px-2 py-1 bg-zinc-700 dark:bg-zinc-800 rounded hover:bg-red-600 dark:hover:bg-red-700 transition text-white"
+                type="button"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+          <div
+            className={`flex flex-col gap-2 ${
+              isDragging
+                ? "ring-2 ring-blue-400 bg-blue-100/40 dark:bg-blue-900/20"
+                : ""
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
           >
-            Remove
-          </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="p-2 text-zinc-300 dark:text-zinc-200 hover:text-blue-400"
+                onClick={() => fileInputRef.current?.click()}
+                aria-label="Attach image"
+              >
+                📎
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+              <input
+                type="text"
+                className="w-full p-2 rounded border bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring"
+                placeholder={
+                  isDragging ? "Drop an image here..." : "Type a message..."
+                }
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() && !image}
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:opacity-60"
+                aria-label="Send"
+                type="button"
+              >
+                Send
+              </button>
+            </div>
+          </div>
         </div>
-      )}
-      <div
-        className={`flex flex-col gap-2 ${
-          isDragging
-            ? "ring-2 ring-blue-400 bg-blue-100/40 dark:bg-blue-900/20"
-            : ""
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        {/* (Your image preview goes here, if any) */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="p-2 text-zinc-300 dark:text-zinc-200 hover:text-blue-400"
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Attach image"
-          >
-            📎
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-          <input
-            type="text"
-            className="w-full p-2 rounded border bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring"
-            placeholder={
-              isDragging ? "Drop an image here..." : "Type a message..."
-            }
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            autoFocus
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() && !image}
-            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:opacity-60"
-            aria-label="Send"
-            type="button"
-          >
-            Send
-          </button>
-        </div>
-      </div>
+      </ChatInputPortal>
     </div>
   );
 }
