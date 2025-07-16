@@ -78,13 +78,13 @@ src/
 
 ## Screenshots
 
-| Authentication (OTP)                                                 | Chatroom Dashboard                                                      |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| ![Auth screen](../gemini-frontend-clone/public/screenshots/auth.png) | ![Dashboard](../gemini-frontend-clone/public/screenshots/dashboard.png) |
+| Authentication (OTP)                        | Chatroom Dashboard                             |
+| ------------------------------------------- | ---------------------------------------------- |
+| ![Auth screen](public/screenshots/auth.png) | ![Dashboard](public/screenshots/dashboard.png) |
 
-| Chat UI (AI Typing, Image Upload)                                     | OTP                                                         |
-| --------------------------------------------------------------------- | ----------------------------------------------------------- |
-| ![Chat UI](../gemini-frontend-clone/public/screenshots/dark-mode.png) | ![OTP](../gemini-frontend-clone/public/screenshots/otp.png) |
+| Chat UI (AI Typing, Image Upload)            | OTP                                |
+| -------------------------------------------- | ---------------------------------- |
+| ![Chat UI](public/screenshots/dark-mode.png) | ![OTP](public/screenshots/otp.png) |
 
 ---
 

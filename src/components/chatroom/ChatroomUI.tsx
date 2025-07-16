@@ -259,7 +259,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
                     );
                     toast.success("Copied to clipboard!");
                   }}
-                  className="absolute -bottom-8 right-2 bg-zinc-800 dark:bg-zinc-900 text-xs text-white px-2 py-1 rounded shadow hover:bg-blue-600 dark:hover:bg-blue-500 transition z-10"
+                  className="absolute -bottom-4 right-2 bg-zinc-800 dark:bg-zinc-900 text-xs text-white px-2 py-1 rounded shadow hover:bg-blue-600 dark:hover:bg-blue-500 transition z-10"
                   aria-label="Copy message"
                   type="button"
                 >
