@@ -78,12 +78,14 @@ src/
 
 ## Screenshots
 
-| Authentication (OTP)               | Chatroom Dashboard                            | Chat UI (AI Typing, Image Upload) | Mobile & Dark Mode     |
-| ---------------------------------- | --------------------------------------------- | --------------------------------- | ---------------------- |
-| ![Authnetication screen](auth.png) | ![Chatroom dashboard](chatroom dashboard.png) | ![Chat UI](dark mode.png)         | ![OTP screen](otp.png) |
+| Authentication (OTP)                 | Chatroom Dashboard                      |
+| ------------------------------------ | --------------------------------------- |
+| ![Auth screen](screenshots/auth.png) | ![Dashboard](screenshots/dashboard.png) |
+
+| Chat UI (AI Typing, Image Upload)    | OTP                                      |
+| ------------------------------------ | ---------------------------------------- |
+| ![Chat UI](screenshots/dark-mode.png)| ![OTP](screenshots/otp.png)              |
 
 ---
 
 > _All required documentation per Kuvaka Tech’s spec is included above. For code walk-through or more technical notes, feel free to reach out!_
-
----
