@@ -1,14 +1,16 @@
 import { useChatroomStore } from "@/store/chatroomStore";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import ChatInputPortal from "../chatroom/ChatInputPortal";
+import { useInfiniteScrollUp } from "@/hooks/useInfiniteScrollUp";
 
 interface ChatroomUIProps {
   chatroomId: string;
 }
 
 const PAGE_SIZE = 20;
+
 export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   // Zustand selectors
   const messages = useChatroomStore((s) => s.messages[chatroomId] || []);
@@ -32,14 +34,20 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null);
 
+  
+  const [isNearBottom, setIsNearBottom] = useState(true);
+  const wasNearBottomRef = useRef(true);
+
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDragging(true);
   }
+
   function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDragging(false);
   }
+
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDragging(false);
@@ -67,48 +75,89 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     reader.readAsDataURL(file);
   }
 
-  // Reset pagination and load messages on chatroom change
+  const checkIfNearBottom = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) return false;
+
+    const threshold = 100; 
+    const isNear =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      threshold;
+
+    setIsNearBottom(isNear);
+    wasNearBottomRef.current = isNear;
+    return isNear;
+  }, []);
+
   useEffect(() => {
     loadInitialMessages(chatroomId);
     setPagination(chatroomId, 1);
+    setIsNearBottom(true);
+    wasNearBottomRef.current = true;
+
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
     }, 0);
   }, [chatroomId, loadInitialMessages, setPagination]);
+  useEffect(() => {
+    if (wasNearBottomRef.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [messages.length]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      checkIfNearBottom();
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [checkIfNearBottom]);
+
   const paginatedMessages = messages.slice(
     -pagination.page * pagination.pageSize
   );
 
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    if (
-      scrollRef.current.scrollTop === 0 &&
-      !loadingMore &&
-      paginatedMessages.length < messages.length
-    ) {
-      setLoadingMore(true);
-      setTimeout(() => {
-        setPagination(chatroomId, pagination.page + 1);
-        setLoadingMore(false);
-      }, 800); // Simulate network delay
-    }
-  };
+  const canLoadMore = paginatedMessages.length < messages.length;
+
+  const handleLoadMore = useCallback(() => {
+    if (loadingMore) return;
+
+    setLoadingMore(true);
+
+    setTimeout(() => {
+      setPagination(chatroomId, pagination.page + 1);
+      setLoadingMore(false);
+    }, 300);
+  }, [chatroomId, pagination.page, setPagination, loadingMore]);
+
+  const topMarkerRef = useInfiniteScrollUp({
+    containerRef: scrollRef,
+    canLoadMore,
+    loading: loadingMore,
+    onLoadMore: handleLoadMore,
+    threshold: 50,
+  });
 
   const handleSend = () => {
     const trimmed = input.trim();
-    if (!trimmed && !image) return; // prevent empty send
+    if (!trimmed && !image) return;
+
     addMessage(chatroomId, {
       text: trimmed,
       sender: "user",
       image: image || undefined,
     });
+
     setInput("");
     setImage(null);
     setIsGeminiTyping(true);
+
     setTimeout(() => {
       addMessage(chatroomId, { text: getRandomGeminiReply(), sender: "ai" });
       setIsGeminiTyping(false);
@@ -122,34 +171,42 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
     "I'm here to chat whenever you want.",
     "Absolutely!",
     "Can you elaborate?",
+    "I understand what you're saying.",
+    "That's a great point!",
+    "Let me think about that...",
+    "Could you explain that further?",
   ];
 
   function getRandomGeminiReply() {
     return GEMINI_REPLIES[Math.floor(Math.random() * GEMINI_REPLIES.length)];
   }
 
-  // --- MAIN RENDER ---
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <div
-      className="
-      w-full h-full flex flex-col 
-      bg-[#FAFAFB] dark:bg-[#19191C] transition-colors rounded-2xl shadow-xl overflow-hidden
-      max-w-2xl mx-auto
-    "
-    >
+    <div className="w-full h-full flex flex-col bg-[#FAFAFB] dark:bg-[#19191C] transition-colors rounded-2xl shadow-xl overflow-hidden max-w-2xl mx-auto">
       <div
-        className="flex-1 overflow-y-auto mb-4 px-2 pb-28" // <-- add pb-28 for input height
+        className="flex-1 overflow-y-auto mb-4 px-2 pb-28 relative"
         ref={scrollRef}
-        onScroll={handleScroll}
       >
+        <div ref={topMarkerRef} style={{ height: 1 }}></div>
+
         {loadingMore && (
-          <div className="w-full flex justify-center py-2 text-gray-400 animate-pulse">
-            Loading more...
+          <div className="w-full flex justify-center py-4">
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              <span className="text-sm">Loading older messages...</span>
+            </div>
           </div>
         )}
+
+        {/* Messages */}
         {paginatedMessages.map((msg) => (
           <div
             key={msg.id}
+            data-message-id={msg.id}
             className={`group flex mb-3 ${
               msg.sender === "user" ? "justify-end" : "justify-start"
             }`}
@@ -171,14 +228,18 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
                     );
                     toast.success("Copied to clipboard!");
                   }}
-                  className="absolute -bottom-3 right-2 bg-zinc-800 dark:bg-zinc-900 text-xs text-white px-2 py-1 rounded shadow hover:bg-blue-600 dark:hover:bg-blue-500 transition z-10"
+                  className="absolute -bottom-8 right-2 bg-zinc-800 dark:bg-zinc-900 text-xs text-white px-2 py-1 rounded shadow hover:bg-blue-600 dark:hover:bg-blue-500 transition z-10"
                   aria-label="Copy message"
                   type="button"
                 >
                   Copy
                 </button>
               )}
-              {msg.text}
+
+              {msg.text && (
+                <div className="whitespace-pre-wrap">{msg.text}</div>
+              )}
+
               {msg.image && (
                 <div className="mt-2">
                   <Image
@@ -195,6 +256,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
                   />
                 </div>
               )}
+
               <div className="text-xs opacity-60 mt-1">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -204,17 +266,51 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
             </div>
           </div>
         ))}
+
+        {/* Typing indicator */}
         {isGeminiTyping && (
           <div className="flex mb-3 justify-start">
-            <div className="rounded-xl px-4 py-2 max-w-xs bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100 italic opacity-80 animate-pulse">
-              Gemini is typing...
+            <div className="rounded-xl px-4 py-2 max-w-xs bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100 italic opacity-80">
+              <div className="flex items-center gap-1">
+                <span>Gemini is typing</span>
+                <div className="flex gap-1 ml-1">
+                  <div className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-1 h-1 bg-current rounded-full animate-bounce"></div>
+                </div>
+              </div>
             </div>
           </div>
         )}
+
+        {/* Scroll anchor */}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* --- Chat Input Portal --- */}
+      {/* Scroll to bottom button */}
+      {!isNearBottom && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-32 right-4 z-40 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 shadow-lg transition-all duration-200"
+          aria-label="Scroll to bottom"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
+          </svg>
+        </button>
+      )}
+
+      {/* Chat Input Portal */}
       <ChatInputPortal>
         <div className="fixed bottom-0 left-1/2 w-full max-w-2xl -translate-x-1/2 z-50 p-2 bg-[#FAFAFB] dark:bg-[#19191C]/95 border-t border-zinc-200 dark:border-zinc-700 shadow-2xl">
           {image && (
@@ -236,6 +332,7 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
               </button>
             </div>
           )}
+
           <div
             className={`flex flex-col gap-2 ${
               isDragging
@@ -249,12 +346,13 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="p-2 text-zinc-300 dark:text-zinc-200 hover:text-blue-400"
+                className="p-2 text-zinc-300 dark:text-zinc-200 hover:text-blue-400 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Attach image"
               >
                 📎
               </button>
+
               <input
                 type="file"
                 ref={fileInputRef}
@@ -262,9 +360,10 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
                 style={{ display: "none" }}
                 onChange={handleFileChange}
               />
+
               <input
                 type="text"
-                className="w-full p-2 rounded border bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring"
+                className="w-full p-2 rounded border bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder={
                   isDragging ? "Drop an image here..." : "Type a message..."
                 }
@@ -278,10 +377,11 @@ export default function ChatroomUI({ chatroomId }: ChatroomUIProps) {
                 }}
                 autoFocus
               />
+
               <button
                 onClick={handleSend}
                 disabled={!input.trim() && !image}
-                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:opacity-60"
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 aria-label="Send"
                 type="button"
               >

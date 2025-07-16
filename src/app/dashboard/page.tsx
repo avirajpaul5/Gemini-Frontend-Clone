@@ -66,7 +66,7 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 w-full h-full">
+          <div className="h-[calc(100vh-6rem)] w-full flex items-center justify-center bg-zinc-50 dark:bg-zinc-900 overflow-y-hidden mt-10">
             <ChatroomUI chatroomId={selectedChatroomId!} />
           </div>
         )}
